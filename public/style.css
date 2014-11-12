@@ -1,0 +1,65 @@
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.x.axis path {
+    display: none;
+}
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+
+#content {
+    font-family: Calibri;
+    font-size: small;
+    width: 600px;
+}
+
+#main_content {
+    font-size: x-small;
+}
+#controls {
+    border: none;
+    border-top: none;
+    margin-top: 20px;
+    width: inherit;
+    font-size: small;
+}
+
+td {
+    vertical-align: top;
+    align: left;
+}
+
+.h5 {
+    margin-bottom: 0px;
+}
+
+#userId {
+    width: 50px;
+}
+
+#nextButton {
+    width: 100px;
+}
+
+.ratingRadio {
+    margin-top: -1px;
+    vertical-align: middle;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
