@@ -17,19 +17,15 @@
 
 #content {
     font-family: Calibri;
-    font-size: small;
-    width: 600px;
+    font-size: large;
+    width: 800px;
+    margin: 0 auto;
 }
 
-#main_content {
-    font-size: x-small;
-}
 #controls {
     border: none;
-    border-top: none;
     margin-top: 20px;
     width: inherit;
-    font-size: small;
 }
 
 td {
@@ -37,16 +33,23 @@ td {
     align: left;
 }
 
-.h5 {
-    margin-bottom: 0px;
-}
-
 #userId {
     width: 50px;
+    text-align: center;
+}
+
+#invalidId {
+    text-align: center;
+    font-weight: bold;
+    color: darkred;
 }
 
 #nextButton {
     width: 100px;
+}
+
+.radioHeading {
+    font-weight: bold;
 }
 
 .ratingRadio {
