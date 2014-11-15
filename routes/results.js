@@ -5,7 +5,7 @@ var _ = require('underscore');
 
 router.post('/results', function (req, res) {
     var data = req.body;
-    var path = "/results/test.dat";
+    var path = "./public/8214ba9ab15f49/test.dat";
     if (!fs.existsSync(path)) {
         var s = _.chain(Object.getOwnPropertyNames(data))
             .reduce(function (s1, s2) { return s1 + ", " + s2; })

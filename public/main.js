@@ -151,8 +151,6 @@ function nextChart() {
 
 }
 
-
-
 function done() {
     $("#controls").hide();
     // TODO
@@ -220,7 +218,7 @@ function drawChart(data) {
 
 function postResults() {
     var result = {
-        time: Date.now(),
+        time:  new Date().toISOString(),
         position: position,
         user: userId,
         chart: displayedChart.id,
@@ -234,11 +232,10 @@ function postResults() {
     $.post("results", result)
 }
 
-
 function revealFuture(){
 
     // load future data & charts
-    d3.csv("webfiles/CHART_RESULT_SERIES.csv", loadFutureCharts);
+    d3.csv("CHART_RESULT_SERIES.csv", loadFutureCharts);
 }
 
 function loadFutureCharts(data) {
@@ -273,7 +270,6 @@ function loadFutureCharts(data) {
     }
     
 }
-
 
 function drawFutureCharts(data) {
 
