@@ -10,6 +10,8 @@ var futureChartsLoaded = false;
 var userIdValid = false;
 var userId = null;
 var position = 1;
+var blocks = ['VNEG','NEG','FLAT','POS','VPOS'];
+var chartsPerBlock = 1; // TODO: should be 2 in production?
 
 function initialize() {
 
@@ -64,6 +66,7 @@ function validateUser(source) {
 
 function enableStart() {
     var enabled = chartsLoaded && userIdValid;
+    blockRandomize();
     enableNextButton(enabled);
     if (enabled) $("#nextButton").focus();
 }
@@ -103,16 +106,18 @@ function loadCharts(data) {
         });
     });
 
-    randomize();
+    //randomize();
 
     chartsLoaded = true;
     enableStart();
 }
 
+/*
 function randomize() {
     chartIndices = _.range(charts.length);
 
-    // TODO: block randomization
+    // TODO: block randomization based on user id
+    
     chartIndices = _.shuffle(chartIndices);
 
     // TODO: remove in production
@@ -120,6 +125,44 @@ function randomize() {
 
     chartIndices.reverse(); // so that we can use pop()
     chartIds = _.map(chartIndices, function(i){return charts[i]['id']})
+}
+*/
+
+function blockRandomize(){
+    var showCharts = []
+    for(var i=0; i < blocks.length; i++){
+        var bcharts = _.filter(charts, function(chart){return chart.group === blocks[i]});
+        showCharts = showCharts.concat(_.sample(bcharts,chartsPerBlock));
+    }
+    showCharts = _.shuffle(showCharts);
+
+    var dig1 = userId[0];
+    var block1;
+    if(dig1 === "0" | dig1 === "1" ){
+        block1 = "VNEG";
+    } else if(dig1 === "2" | dig1 === "3" ){
+        block1 = "NEG";
+    } else if(dig1 === "4" | dig1 === "5" ){
+        block1 = "FLAT";
+    } else if(dig1 === "6" | dig1 === "7" ){
+        block1 = "POS";
+    } else {
+        block1 = "VPOS";
+    }
+
+    var chartBlocks = _.pluck(showCharts, 'group');
+    var moveIndex = _.indexOf(chartBlocks, block1);
+
+    var toMove = showCharts.splice(chartBlocks.indexOf(block1), 1);
+    showCharts.push(toMove[0]);
+
+    chartIndices = [];
+    chartIds = [];
+    _.each(showCharts, function(charti){
+        chartIndices.push(_.indexOf(_.pluck(charts, 'id'), charti.id));
+        chartIds.push(charti.id);
+    })
+
 }
 
 function nextChart() {
