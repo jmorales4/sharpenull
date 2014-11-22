@@ -29,8 +29,111 @@
   </div>
 
   <div id="main_content">
-    You will be shown a series of ten historical price charts for different stocks from different past time periods. For each chart, you will be asked to forecast whether the stock will go up, down, or sideways in the future and how sure you are about your guess. After completing all the charts you can see how all of your predictions actually panned out. The price level and dates have been altered to make the charts anonymous, but each pattern happened in real life.
+    You will be shown a series of ten historical price charts for different stocks from different past time periods. For
+    each chart, you will be asked to forecast whether the stock will go up, down, or sideways in the future and how sure
+    you are about your guess. After completing all the charts you can see how all of your predictions actually panned
+    out. The price level and dates have been altered to make the charts anonymous, but each pattern happened in real
+    life.
   </div>
+  <table id="survey" width="100%" hidden="hidden">
+    <tr>
+      <td colspan="6">1. On a scale of 1-5, how would you rate yourself on each of the following:</td>
+    </tr>
+    <tr>
+      <td class="indent1" width="65%">a. Financial literacy</td>
+      <td width="7%"><label><input class="surveyRadio" name="literacy" type="radio"/> 1</label></td>
+      <td width="7%"><label><input class="surveyRadio" name="literacy" type="radio"/> 2</label></td>
+      <td width="7%"><label><input class="surveyRadio" name="literacy" type="radio"/> 3</label></td>
+      <td width="7%"><label><input class="surveyRadio" name="literacy" type="radio"/> 4</label></td>
+      <td width="7%"><label><input class="surveyRadio" name="literacy" type="radio"/> 5</label></td>
+    </tr>
+    <tr>
+      <td class="indent1">b. Financial knowledge</td>
+      <td><label><input class="surveyRadio" name="knowledge" type="radio"/> 1</label></td>
+      <td><label><input class="surveyRadio" name="knowledge" type="radio"/> 2</label></td>
+      <td><label><input class="surveyRadio" name="knowledge" type="radio"/> 3</label></td>
+      <td><label><input class="surveyRadio" name="knowledge" type="radio"/> 4</label></td>
+      <td><label><input class="surveyRadio" name="knowledge" type="radio"/> 5</label></td>
+    </tr>
+    <tr>
+      <td class="indent1">c. Financial experience</td>
+      <td><label><input class="surveyRadio" name="experience" type="radio"/> 1</label></td>
+      <td><label><input class="surveyRadio" name="experience" type="radio"/> 2</label></td>
+      <td><label><input class="surveyRadio" name="experience" type="radio"/> 3</label></td>
+      <td><label><input class="surveyRadio" name="experience" type="radio"/> 4</label></td>
+      <td><label><input class="surveyRadio" name="experience" type="radio"/> 5</label></td>
+    </tr>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>2. Are you a financial professional?</td>
+      <td><label><input class="surveyRadio" name="professional" type="radio"/> Yes</label></td>
+      <td><label><input class="surveyRadio" name="professional" type="radio"/> No</label></td>
+    </tr>
+    <tr class="professionalField" hidden="hidden">
+      <td class="indent1">a. How many years of experience do you have in the field?</td>
+      <td><input class="surveyText" name="years" type="text"/></td>
+    </tr>
+    <tr class="professionalField" hidden="hidden">
+      <td class="indent1">b. Which of the following most closely describes your current role?</td>
+    <tr class="professionalField" hidden="hidden">
+      <td class="indent2" colspan="6">
+        <table>
+          <tr>
+            <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Trader</label></td>
+            <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Quant</label></td>
+            <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Broker</label></td>
+            <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Developer</label></td>
+            <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Advisor</label></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>3.  Do you or have you ever had any personal investments?</td>
+      <td><label><input class="surveyRadio" name="personal" type="radio"/> Yes</label></td>
+      <td><label><input class="surveyRadio" name="personal" type="radio"/> No</label></td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent1">a. Do you have a 401K or other retirement account?</td>
+      <td><label><input class="surveyRadio" name="401k" type="radio"/> Yes</label></td>
+      <td><label><input class="surveyRadio" name="401k" type="radio"/> No</label></td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent1">b. Do you prefer investing in:</td>
+      <td colspan="5"><label><input class="surveyRadio" name="investType"
+                                                    type="radio"/> mutual funds/ETFs</label><br>
+        <label><input class="surveyRadio" name="investType" type="radio"/> individual stocks and bonds</label></td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent1">c. How would you describe your current asset allocation?</td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent3"><label><input class="surveyText" name="stocks" type="text"/> % stocks</label></td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent3"><label><input class="surveyText" name="bonds" type="text"/> % bonds</label></td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent3"><label><input class="surveyText" name="derivatives" type="text"/> % derivatives</label></td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent3"><label><input class="surveyText" name="other" type="text"/> % other</label></td>
+    </tr>
+    <tr class="personalField" hidden="hidden">
+      <td  class="indent1" colspan="6">d. What do you think your personal percent annual return has been over the course
+        of your lifetime?
+      </td>
+      </tr>
+    <tr class="personalField" hidden="hidden">
+      <td class="indent3"><input class="surveyText" name="return" type="text"/> %</td>
+    </tr>
+
+  </table>
   <table id="controls">
     <tr>
       <td valign="top">
@@ -39,15 +142,15 @@
       </td>
       <td valign="top" class="ratings">
         <label class="radioHeading">Direction</label> <br>
-        <label><input class="ratingRadio" name="direction" type="radio"/>  Up</label><br>
-        <label><input class="ratingRadio" name="direction" type="radio">  Sideways</label><br>
-        <label><input class="ratingRadio" name="direction" type="radio">  Down</label>
+        <label><input class="ratingRadio" name="direction" type="radio"/> Up</label><br>
+        <label><input class="ratingRadio" name="direction" type="radio"> Sideways</label><br>
+        <label><input class="ratingRadio" name="direction" type="radio"> Down</label>
       </td>
       <td valign="top" class="ratings">
         <label class="radioHeading">Conviction</label><br>
-        <label><input class="ratingRadio" name="conviction" type="radio"/>  Weak</label><br>
-        <label><input class="ratingRadio" name="conviction" type="radio">  Moderate</label><br>
-        <label><input class="ratingRadio" name="conviction" type="radio">  Strong</label><br>
+        <label><input class="ratingRadio" name="conviction" type="radio"/> Weak</label><br>
+        <label><input class="ratingRadio" name="conviction" type="radio"> Moderate</label><br>
+        <label><input class="ratingRadio" name="conviction" type="radio"> Strong</label><br>
       </td>
       <td>
         <button id="nextButton">Start</button>
