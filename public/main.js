@@ -1,5 +1,6 @@
 var charts = [];
 var chartIndices = [];
+var futureChartIndices = [];
 var chartIds = [];
 var futureCharts = [];
 var resultStore = [];
@@ -10,7 +11,7 @@ var futureChartsLoaded = false;
 var userIdValid = false;
 var userId = null;
 var position = 1;
-var blocks = ['VNEG','NEG','FLAT','POS','VPOS'];
+var blocks = ['VNEG', 'NEG', 'FLAT', 'POS', 'VPOS'];
 var chartsPerBlock = 1; // TODO: should be 2 in production?
 
 function initialize() {
@@ -28,6 +29,8 @@ function initialize() {
     $("input[name='conviction']").click(radioClicked);
 
     d3.csv("CHART_SERIES.csv", loadCharts);
+    d3.csv("CHART_RESULT_SERIES.csv", loadFutureCharts);
+
 }
 
 function filterNonNumbers(e) {
@@ -65,8 +68,8 @@ function validateUser(source) {
 }
 
 function enableStart() {
-    var enabled = chartsLoaded && userIdValid;
-    blockRandomize();
+    var enabled = futureChartsLoaded && chartsLoaded && userIdValid;
+    if (enabled) blockRandomize();
     enableNextButton(enabled);
     if (enabled) $("#nextButton").focus();
 }
@@ -100,51 +103,32 @@ function loadCharts(data) {
             charts.push(currentChart);
         }
         currentChart.data.push({
-            // TODO: did we want "anonymous" dates?
             date: parseDate(row.date),
             close: parseFloat(row.value)
         });
     });
 
-    //randomize();
-
     chartsLoaded = true;
     enableStart();
 }
 
-/*
-function randomize() {
-    chartIndices = _.range(charts.length);
-
-    // TODO: block randomization based on user id
-    
-    chartIndices = _.shuffle(chartIndices);
-
-    // TODO: remove in production
-    chartIndices = _.first(chartIndices, 5);
-
-    chartIndices.reverse(); // so that we can use pop()
-    chartIds = _.map(chartIndices, function(i){return charts[i]['id']})
-}
-*/
-
-function blockRandomize(){
+function blockRandomize() {
     var showCharts = []
-    for(var i=0; i < blocks.length; i++){
-        var bcharts = _.filter(charts, function(chart){return chart.group === blocks[i]});
-        showCharts = showCharts.concat(_.sample(bcharts,chartsPerBlock));
+    for (var i = 0; i < blocks.length; i++) {
+        var bcharts = _.filter(charts, function (chart) {return chart.group === blocks[i]});
+        showCharts = showCharts.concat(_.sample(bcharts, chartsPerBlock));
     }
     showCharts = _.shuffle(showCharts);
 
     var dig1 = userId[0];
     var block1;
-    if(dig1 === "0" | dig1 === "1" ){
+    if (dig1 === "0" | dig1 === "1") {
         block1 = "VNEG";
-    } else if(dig1 === "2" | dig1 === "3" ){
+    } else if (dig1 === "2" | dig1 === "3") {
         block1 = "NEG";
-    } else if(dig1 === "4" | dig1 === "5" ){
+    } else if (dig1 === "4" | dig1 === "5") {
         block1 = "FLAT";
-    } else if(dig1 === "6" | dig1 === "7" ){
+    } else if (dig1 === "6" | dig1 === "7") {
         block1 = "POS";
     } else {
         block1 = "VPOS";
@@ -158,11 +142,11 @@ function blockRandomize(){
 
     chartIndices = [];
     chartIds = [];
-    _.each(showCharts, function(charti){
+    _.each(showCharts, function (charti) {
         chartIndices.push(_.indexOf(_.pluck(charts, 'id'), charti.id));
-        chartIds.push(charti.id);
+        futureChartIndices.push(_.indexOf(_.pluck(futureCharts, 'id'), charti.id));
     })
-
+    futureChartIndices.reverse();
 }
 
 function nextChart() {
@@ -196,10 +180,6 @@ function nextChart() {
 
 function done() {
     $("#controls").hide();
-    // TODO
-    // $("#main_content").text("Done");
-
-    // Display results
     revealFuture();
 }
 
@@ -261,7 +241,7 @@ function drawChart(data) {
 
 function postResults() {
     var result = {
-        time:  new Date().toISOString(),
+        time: new Date().toISOString(),
         position: position,
         user: userId,
         chart: displayedChart.id,
@@ -275,10 +255,13 @@ function postResults() {
     $.post("results", result)
 }
 
-function revealFuture(){
-
-    // load future data & charts
-    d3.csv("CHART_RESULT_SERIES.csv", loadFutureCharts);
+function revealFuture() {
+    for (var i = 0; i < futureChartIndices.length; i++) {
+        displayedChart = futureCharts[futureChartIndices[i]];
+        displayedChart.conviction = _.findWhere(resultStore, {chart: displayedChart.id}).conviction;
+        displayedChart.direction = _.findWhere(resultStore, {chart: displayedChart.id}).direction;
+        drawFutureCharts(displayedChart);
+    }
 }
 
 function loadFutureCharts(data) {
@@ -286,16 +269,12 @@ function loadFutureCharts(data) {
 
     var currentChart = {id: -1};
 
-    var subset = _.filter(data, function(obj){return _.contains(chartIds, obj.groupid)});
-
-    subset.forEach(function (row) {
+    data.forEach(function (row) {
         if (row.groupid !== currentChart.id) {
             currentChart = {
                 id: row.groupid,
                 group: row.group,
                 underlyer: row.underlyer,
-                conviction: _.findWhere(resultStore, {chart:row.groupid }).conviction,
-                direction: _.findWhere(resultStore, {chart:row.groupid }).direction,
                 data: []
             };
             futureCharts.push(currentChart);
@@ -308,13 +287,10 @@ function loadFutureCharts(data) {
     });
 
     futureChartsLoaded = true;
-    for(var i=0;i<futureCharts.length;i++){
-        drawFutureCharts(futureCharts[i]);
-    }
-    
+
 }
 
-function drawFutureCharts(data) {
+function drawFutureCharts(chart) {
 
 
     var margin = {top: 50, right: 20, bottom: 30, left: 50},
@@ -348,8 +324,8 @@ function drawFutureCharts(data) {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    x.domain(d3.extent(data.data, function (d) { return d.date; }));
-    y.domain(d3.extent(data.data, function (d) { return d.close; }));
+    x.domain(d3.extent(chart.data, function (d) { return d.date; }));
+    y.domain(d3.extent(chart.data, function (d) { return d.close; }));
 
     svg.append("g")
         .attr("class", "x axis")
@@ -367,17 +343,17 @@ function drawFutureCharts(data) {
         .text("Price ($)");
 
     svg.append("path")
-        .datum(_.filter(data.data, function(obj){return obj.type==='past'}))
+        .datum(_.filter(chart.data, function (obj) {return obj.type === 'past'}))
         .attr("class", "line past")
         .attr("d", line);
 
     svg.append("path")
-        .datum(_.filter(data.data, function(obj){return obj.type==='future'}))
+        .datum(_.filter(chart.data, function (obj) {return obj.type === 'future'}))
         .attr("class", "line future")
         .attr("d", line);
 
     svg.append('text')
-        .datum(data)
-        .attr({"x":"30", "y":"-5", "fill":"black"})
-        .text(function(d){return d.underlyer + ": " + d.direction + " " + d.conviction})
+        .datum(chart)
+        .attr({"x": "30", "y": "-5", "fill": "black"})
+        .text(function (d) {return d.underlyer + ": " + d.direction + " " + d.conviction})
 }
