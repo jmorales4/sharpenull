@@ -37,7 +37,7 @@
   </div>
   <table id="survey" width="100%" hidden="hidden">
     <tr>
-      <td colspan="6">1. On a scale of 1-5, how would you rate yourself on each of the following:</td>
+      <td colspan="6">1. On a scale of 1 (low) - 5 (high), how would you rate yourself on each of the following:</td>
     </tr>
     <tr>
       <td class="indent1" width="65%">a. Financial literacy</td>
@@ -84,8 +84,8 @@
             <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Trader</label></td>
             <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Quant</label></td>
             <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Broker</label></td>
-            <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Developer</label></td>
             <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Advisor</label></td>
+            <td class="surveyCell"><label><input class="surveyRadio" name="role" type="radio"/> Other</label></td>
           </tr>
         </table>
       </td>
@@ -110,7 +110,7 @@
         <label><input class="surveyRadio" name="investType" type="radio"/> individual stocks and bonds</label></td>
     </tr>
     <tr class="personalField" hidden="hidden">
-      <td class="indent1">c. How would you describe your current asset allocation?</td>
+      <td class="indent1">c. How would you describe your current asset allocation? (a rough guess is fine, just leave it blank if you have no idea)</td>
     </tr>
     <tr class="personalField" hidden="hidden">
       <td class="indent3"><label><input class="surveyText" name="stocks" type="text"/> % stocks</label></td>
@@ -119,18 +119,22 @@
       <td class="indent3"><label><input class="surveyText" name="bonds" type="text"/> % bonds</label></td>
     </tr>
     <tr class="personalField" hidden="hidden">
-      <td class="indent3"><label><input class="surveyText" name="derivatives" type="text"/> % derivatives</label></td>
+      <td class="indent3"><label><input class="surveyText" name="cash" type="text"/> % cash</label></td>
     </tr>
     <tr class="personalField" hidden="hidden">
       <td class="indent3"><label><input class="surveyText" name="other" type="text"/> % other</label></td>
     </tr>
     <tr class="personalField" hidden="hidden">
-      <td  class="indent1" colspan="6">d. What do you think your personal percent annual return has been over the course
-        of your lifetime?
+      <td  class="indent1" colspan="6">d. How do you think your personal portfolio has performed over the past 2 years? (again a rough guess is fine)
       </td>
       </tr>
     <tr class="personalField" hidden="hidden">
-      <td class="indent3"><input class="surveyText" name="return" type="text"/> %</td>
+      <!-- <td class="indent3"><input class="surveyText" name="return" type="text"/> %</td> -->
+      <td class="indent3">
+        <label><input class="surveyRadio" name="return" type="radio"/> Above Average</label><br>
+        <label><input class="surveyRadio" name="return" type="radio"/> About Average</label><br>
+        <label><input class="surveyRadio" name="return" type="radio"/> Below Average</label>
+      </td>
     </tr>
 
   </table>
@@ -141,13 +145,13 @@
         <label id="invalidId" hidden="hidden">Invalid User Id</label>
       </td>
       <td valign="top" class="ratings">
-        <label class="radioHeading">Direction</label> <br>
+        <label class="radioHeading">Guess the direction over the next 6 months:</label> <br>
         <label><input class="ratingRadio" name="direction" type="radio"/> Up</label><br>
         <label><input class="ratingRadio" name="direction" type="radio"> Sideways</label><br>
         <label><input class="ratingRadio" name="direction" type="radio"> Down</label>
       </td>
       <td valign="top" class="ratings">
-        <label class="radioHeading">Conviction</label><br>
+        <label class="radioHeading">How high is your conviction?</label><br>
         <label><input class="ratingRadio" name="conviction" type="radio"/> Weak</label><br>
         <label><input class="ratingRadio" name="conviction" type="radio"> Moderate</label><br>
         <label><input class="ratingRadio" name="conviction" type="radio"> Strong</label><br>
