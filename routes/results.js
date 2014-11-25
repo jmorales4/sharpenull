@@ -37,7 +37,7 @@ router.post('/survey', function (req, res) {
         'investType',
         'stocks',
         'bonds',
-        'derivatives',
+        'cash',
         'other',
         'return'];
 

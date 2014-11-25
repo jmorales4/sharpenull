@@ -402,10 +402,10 @@ function checkSurvey() {
         'personal',
         '401k',
         'investType',
-        //'stocks',
-        //'bonds',
-        //'cash',
-        //'other',
+        'stocks',
+        'bonds',
+        'cash',
+        'other',
         'return'];
 
     surveyResults = {id: userId};
@@ -434,15 +434,18 @@ function checkSurvey() {
                     return surveyResults.professional == 'No' || surveyResults.hasOwnProperty(field);
                 case '401k':
                 case 'investType':
-                //case 'stocks':
-                //case 'bonds':
-                //case 'cash':
-                //case 'other':
                 case 'return':
                     if (surveyResults.personal == 'No') delete surveyResults[field];
                     return surveyResults.personal == 'No' || surveyResults.hasOwnProperty(field);
+                case 'stocks':
+                case 'bonds':
+                case 'cash':
+                case 'other':
+                    // It's ok if these are blank
+                    return true;
                 default:
                     return surveyResults.hasOwnProperty(field);
+
             }
         }).reduce(function (b1, b2) { return b1 && b2; }).value();
 
