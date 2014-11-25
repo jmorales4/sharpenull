@@ -16,7 +16,8 @@ var surveyResults = null;
 var userId = null;
 var position = 1;
 var blocks = ['VNEG', 'NEG', 'FLAT', 'POS', 'VPOS'];
-var chartsPerBlock = 1; // TODO: should be 2 in production?
+var chartsPerBlock = 2; // TODO: should be 2 in production?
+var repeat;
 
 function initialize() {
 
@@ -80,6 +81,7 @@ function enableStart() {
     var enabled = userIdsLoaded && futureChartsLoaded && chartsLoaded && userIdValid;
     if (enabled) blockRandomize();
     needSurvey = userIdValid && userIds.indexOf(userId) < 0;
+    repeat = !needSurvey;
     enableNextButton(enabled);
     if (enabled) $("#nextButton").focus();
 }
@@ -163,17 +165,7 @@ function nextChart() {
     $("#main_content").empty();
     $("#nextButton").prop("disabled", true);
 
-    if (needSurvey) {
-        $("#nextButton").text("Done");
-        $("#userId").prop("disabled", true);
-        return showSurvey();
-    }
-
     if (firstChart) {
-        $("#survey").hide();
-        if (surveyResults !== null)
-            $.post("survey", surveyResults)
-
         $("#nextButton").text("Next Chart");
         $(".ratings").show();
         $("#userId").prop("disabled", true);
@@ -192,15 +184,20 @@ function nextChart() {
         $("#chartId").text(displayedChart.id);
         drawChart(displayedChart.data);
 
+    } else if (needSurvey) {
+        $(".ratings").hide();
+        $("#nextButton").text("Done");
+        $("#main_content").empty();
+        $("#survey").show();
+
     } else {
-        done();
+        $("#survey").hide();
+        $("#controls").hide();
+        if (surveyResults !== null)
+            $.post("survey", surveyResults)
+        revealFuture();
     }
 
-}
-
-function done() {
-    $("#controls").hide();
-    revealFuture();
 }
 
 function drawChart(data) {
@@ -269,6 +266,9 @@ function postResults() {
         direction: displayedChart.direction,
         conviction: displayedChart.conviction
     }
+    if (repeat) {
+        result.repeat = 'repeat';
+    }
 
     resultStore.push(result);
 
@@ -276,6 +276,8 @@ function postResults() {
 }
 
 function revealFuture() {
+    $("#final").show()
+
     for (var i = 0; i < futureChartIndices.length; i++) {
         displayedChart = futureCharts[futureChartIndices[i]];
         displayedChart.conviction = _.findWhere(resultStore, {chart: displayedChart.id}).conviction;
@@ -383,12 +385,6 @@ function loadUserIds(data) {
         userIds.push(row.id);
     });
     userIdsLoaded = true;
-}
-
-function showSurvey() {
-    $("#main_content").empty();
-    $("#survey").show();
-
 }
 
 function checkSurvey() {
