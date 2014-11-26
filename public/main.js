@@ -35,6 +35,10 @@ function initialize() {
     ;
 
     $(".ratings").hide();
+    $("#survey").hide();
+    $(".personalField").hide();
+    $(".professionalField").hide();
+    $("#final").hide()
     $("input[name='direction']").click(radioClicked);
     $("input[name='conviction']").click(radioClicked);
 
