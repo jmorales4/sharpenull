@@ -79,6 +79,33 @@ lag_tests_ant <- lag_tests[complete.cases(lag_tests[,c("up", "sharpe_next")]),]
 summary(lm(up~sharpe_last, lag_tests_ant))
 #p-value of .37, persistence unlikely
 
+#Hypothesis tests
+#look at distribution of return and risk (the treatment variables)
+ggplot(all_data, aes(x = ret)) + geom_histogram()
+ggplot(all_data, aes(x = vol)) + geom_histogram()
+
+#Does Sharpe affect prediction?
+summary(lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+summary(lm(down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+
+
+#Does Sharpe affect confidence?
+
+#create binary conviction variables and perform regression
+all_data$confident_up <- ifelse(all_data$conviction!="Strong", 0, 1)
+all_data$confident_down <- ifelse(all_data$conviction!="Weak", 0, 1)
+summary(lm(confident_up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+summary(lm(confident_down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+
+#regression with high volatility as binary variable (just for kicks)
+nrow(subset(all_data, vol > .3))
+all_data$high_vol <- ifelse(all_data$vol < .3, 0, 1)
+summary(lm(confident_up ~ ret + high_vol + ret * high_vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+
+#Does Sharpe affect prediction differently for finance professionals?
+summary(lm(up ~ sharpe * professional + name + literacy + knowledge + experience + personal + user, all_data))
+
+
 
 
 
