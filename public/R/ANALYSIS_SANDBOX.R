@@ -7,6 +7,9 @@ load("all_data.Rda")
 # look at structure
 str(all_data)
 
+# rename return field b/c it's an R reserved word
+all_data$return_performance = all_data[,"return"]
+
 # look at distribution of sharpe ratios subjects saw
 ggplot(all_data, aes(x = sharpe)) + geom_histogram()# + geom_density(aes(fill=group),alpha=0.25)
 
@@ -56,10 +59,17 @@ summary(lm(sharpe~position * user,data=all_data))
 #merely arose by chance, as confirmed by the F-statistic of the regression
 
 #tests of within subjects assumptions
-install.packages("DataCombine")
-install.packages("reshape")
-library(reshape)
-library(DataCombine)
+if(!require(reshape)){
+  install.packages("reshape")
+  library(reshape)
+}
+if(!require(reshape)){
+  install.packages("DataCombine")
+  library(reshape)
+}
+#library(reshape)
+#library(DataCombine)
+
 lag_tests <- all_data[,c("sharpe", "up", "position", "user")]
 lag_tests <- lag_tests[with(lag_tests, order(user, position)),]
 
@@ -77,35 +87,60 @@ lag_tests <- rename(lag_tests, c("sharpe1"="sharpe_next"))
 lag_tests$sharpe_next <- ifelse(lag_tests$position==10, NA, lag_tests$sharpe_next)
 lag_tests_ant <- lag_tests[complete.cases(lag_tests[,c("up", "sharpe_next")]),]
 summary(lm(up~sharpe_last, lag_tests_ant))
-#p-value of .37, persistence unlikely
+#p-value of .37, anticipation unlikely
 
 #Hypothesis tests
 #look at distribution of return and risk (the treatment variables)
 ggplot(all_data, aes(x = ret)) + geom_histogram()
 ggplot(all_data, aes(x = vol)) + geom_histogram()
 
-#Does Sharpe affect prediction?
+#Set 1: Does Sharpe affect prediction?
+
+# Sharpe Only
+summary(lm(up ~ sharpe + name + literacy + knowledge + experience + professional + personal + user, all_data))
+summary(lm(down ~ sharpe + name + literacy + knowledge + experience + professional + personal + user, all_data))
+
+# Fully Saturated Sharpe (ret + vol + ret*vol)
 summary(lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 summary(lm(down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 
 
-#Does Sharpe affect confidence?
+#Set 2: Does Sharpe affect confidence?
 
 #create binary conviction variables and perform regression
-all_data$confident_up <- ifelse(all_data$conviction!="Strong", 0, 1)
-all_data$confident_down <- ifelse(all_data$conviction!="Weak", 0, 1)
-summary(lm(confident_up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
-summary(lm(confident_down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+all_data$confident_strong <- ifelse(all_data$conviction!="Strong", 0, 1)
+all_data$confident_weak <- ifelse(all_data$conviction!="Weak", 0, 1)
+summary(lm(confident_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+summary(lm(confident_weak ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 
 #regression with high volatility as binary variable (just for kicks)
 nrow(subset(all_data, vol > .3))
 all_data$high_vol <- ifelse(all_data$vol < .3, 0, 1)
-summary(lm(confident_up ~ ret + high_vol + ret * high_vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+summary(lm(confident_strong ~ ret + high_vol + ret * high_vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 
-#Does Sharpe affect prediction differently for finance professionals?
+#Set 3: Does perceived asset performance affect confidence
+
+# check out how many of each category people said
+# TODO: interesting distribution
+table(subset(all_data, position == 1)$return_performance)
+
+return_subset = complete.cases(all_data$return_performance)
+
+summary(lm(confident_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,]))
+summary(lm(confident_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,]))
+
+#Set 4: Does Sharpe affect prediction differently for finance professionals?
 summary(lm(up ~ sharpe * professional + name + literacy + knowledge + experience + personal + user, all_data))
+summary(lm(down ~ sharpe * professional + name + literacy + knowledge + experience + personal + user, all_data))
 
 
+#Set 5: Does it matter where the return happens?
+# make new vars
+all_data$sq1 = with(all_data, (retq1)/vol)
+all_data$sq2 = with(all_data, (retq2)/vol)
+all_data$sq3 = with(all_data, (retq3)/vol)
+all_data$sq4 = with(all_data, (retq4)/vol)
 
-
-
+# check out return by quarter
+summary(lm(up ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
+summary(lm(down ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
