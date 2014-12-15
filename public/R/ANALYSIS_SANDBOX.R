@@ -12,6 +12,7 @@ all_data$return_performance = all_data[,"return"]
 
 # look at distribution of sharpe ratios subjects saw
 ggplot(all_data, aes(x = sharpe)) + geom_histogram()# + geom_density(aes(fill=group),alpha=0.25)
+ggplot(all_data, aes(x = sharpe)) + geom_density(fill='black', alpha=0.25) + geom_density(aes(fill=group),alpha=0.25)
 
 # simple regression suggested by Davids
 summary(lm(up~sharpe, all_data))
@@ -142,5 +143,12 @@ all_data$sq3 = with(all_data, (retq3)/vol)
 all_data$sq4 = with(all_data, (retq4)/vol)
 
 # check out return by quarter
-summary(lm(up ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
-summary(lm(down ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
+lm5up = lm(up ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data)
+lm5down = lm(down ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data)
+
+summary(lm5up)
+summary(lm5down)
+
+summary(lm5up)$coef[c("sq1","sq2","sq3","sq4"),]
+summary(lm5down)$coef[c("sq1","sq2","sq3","sq4"),]
+
