@@ -41,7 +41,31 @@ chart_stats_fn <- function(px){
   ret = (px[n]/px[1]) - 1
   chg = px[2:n]/px[1:(n-1)] - 1
   vol = sqrt(sum(chg ^ 2)/(n-2) * 252)
-  return(c(sharpe = ret/vol, ret = ret, vol = vol))
+  nq = rev(seq(from = n, by=-1*round(n/4), length.out=4))
+  qs = sort(rep_len(1:4,length.out=n))
+  pxq = split(px,qs)
+  retq = unname(sapply(pxq, function(x){x[length(x)]/x[1] - 1}))
+  volq = unname(sapply(pxq, function(x){
+    nq = length(x)
+    chgq = x[2:nq]/x[1:(nq-1)] - 1
+    return(sqrt(sum(chgq ^ 2)/(nq-2) * 252))
+    }))
+  sq = retq/volq
+  
+  return(c(
+    sharpe = ret/vol,
+    ret = ret,
+    vol = vol,
+    retq1 = retq[1],
+    retq2 = retq[2],
+    retq3 = retq[3],
+    retq4 = retq[4],
+    sq1 = sq[1],
+    sq2 = sq[2],
+    sq3 = sq[3],
+    sq4 = sq[4]
+    ))
+  
 }
 
 # create stats for each chart
