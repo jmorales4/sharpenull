@@ -1,0 +1,32 @@
+Created 2 csv files from Bloomberg data:
+1. SERIES_PRICES.csv
+	3 Fields
+	date
+	value (Price of the stock or currency on the date)
+	underlyer (e.g. stock, currency price)
+2. SERIES_DATA.csv
+	5 Fields
+	underlyer (id for the underlying stock or currency)
+	asset_class (EQUITY or CURRENCY)
+	bb_symbol (bloomberg symbol)
+	bb_type (bloomberg suffix)
+	bb_field (bloomberg field)
+
+R Script IDENTIFY_POTENTIAL_CHARTS_AND_SAVE_MASTER.R:
+	reads these 2 csv's.
+	calcualtes sharpe ratios
+	finds non-overlapping charts for each sharpe block
+	saves data in CHART_MASTER.csv
+
+R Script MAKE_CHART_SERIES_FROM_MASTER.R:
+	reads CHART_MASTER.csv and SERIES_PRICE.csv
+	randomly chooses 20 charts from each sharpe block
+	saves CHART_SERIES.csv with slightly modified price data so participants cannot guess chart
+	saves CHART_RESULT_SERIES.csv with original price data and forward looking data for results
+
+R Script MODIFY_CHART_SERIES_FOR_UNIQUE_ID.R:
+	takes old_CHART_SERIES.csv and old_CHART_RESULT_SERIES.csv
+	returns CHART_SERIES.csv and CHART_RESULT_SERIES.csv
+	this was used to fix an issue we noticed where non-unique chart IDs were messing up blocking
+
+
