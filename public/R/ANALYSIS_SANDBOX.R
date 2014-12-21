@@ -12,6 +12,7 @@ all_data$return_performance = all_data[,"return"]
 
 # look at distribution of sharpe ratios subjects saw
 ggplot(all_data, aes(x = sharpe)) + geom_histogram()# + geom_density(aes(fill=group),alpha=0.25)
+ggplot(all_data, aes(x = sharpe)) + geom_density(fill='black', alpha=0.25) + geom_density(aes(fill=group),alpha=0.25)
 
 # simple regression suggested by Davids
 summary(lm(up~sharpe, all_data))
@@ -32,7 +33,8 @@ ggplot(kreg_df, aes(x = sharpe, y = prob, color = type)) + geom_line()
 
 all_data_cov <- all_data[, !names(all_data) %in% c("up", "down", "time", 
                                                    "group", "chart", "ret", "vol"
-                                                   ,"direction", "conviction")]
+                                                   ,"direction", "conviction", "retq1",
+                                                   "retq2","retq3","retq4")]
 all_data_cov_complete <- na.omit(all_data_cov)
 # find and remove categorical variables with only one value
 lapply(na.omit(all_data_cov_complete), unique)
@@ -48,6 +50,11 @@ summary(lm(sharpe~user,data=all_data_cov_complete))
 summary(lm(sharpe~name,data=all_data_cov_complete))
 summary(lm(sharpe~year,data=all_data_cov_complete))
 summary(lm(sharpe~stocks + bonds + cash,data=all_data_cov_complete))
+summary(lm(sharpe~professional,data=all_data))
+summary(lm(sharpe~knowledge,data=all_data))
+summary(lm(sharpe~experience,data=all_data))
+summary(lm(sharpe~literacy,data=all_data))
+summary(lm(sharpe~personal,data=all_data))
 summary(lm(sharpe~user,data=all_data))
 summary(lm(sharpe~name,data=all_data))
 summary(lm(sharpe~time,data=all_data))
@@ -67,8 +74,8 @@ if(!require(reshape)){
   install.packages("DataCombine")
   library(reshape)
 }
-#library(reshape)
-#library(DataCombine)
+library(reshape)
+library(DataCombine)
 
 lag_tests <- all_data[,c("sharpe", "up", "position", "user")]
 lag_tests <- lag_tests[with(lag_tests, order(user, position)),]
@@ -104,6 +111,10 @@ summary(lm(down ~ sharpe + name + literacy + knowledge + experience + profession
 summary(lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 summary(lm(down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 
+# Joint significance test of Sharpe ratio
+reduced <- lm(up ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+full <- lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced, full)
 
 #Set 2: Does Sharpe affect confidence?
 
@@ -112,6 +123,11 @@ all_data$confident_strong <- ifelse(all_data$conviction!="Strong", 0, 1)
 all_data$confident_weak <- ifelse(all_data$conviction!="Weak", 0, 1)
 summary(lm(confident_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 summary(lm(confident_weak ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+
+# Joint significance test of Sharpe ratio
+reduced <- lm(confident_strong ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+full <- lm(confident_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced, full)
 
 #regression with high volatility as binary variable (just for kicks)
 nrow(subset(all_data, vol > .3))
@@ -135,12 +151,29 @@ summary(lm(down ~ sharpe * professional + name + literacy + knowledge + experien
 
 
 #Set 5: Does it matter where the return happens?
-# make new vars
-all_data$sq1 = with(all_data, (retq1)/vol)
-all_data$sq2 = with(all_data, (retq2)/vol)
-all_data$sq3 = with(all_data, (retq3)/vol)
-all_data$sq4 = with(all_data, (retq4)/vol)
 
 # check out return by quarter
-summary(lm(up ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
-summary(lm(down ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
+lm5up = lm(up ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data)
+lm5down = lm(down ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data)
+
+summary(lm5up)
+summary(lm5down)
+
+up_coef = data.frame(summary(lm5up)$coef[c("sq1","sq2","sq3","sq4"),])
+colnames(up_coef) = c("est","se","t","p")
+up_coef$q = 1:4
+
+down_coef = data.frame(summary(lm5down)$coef[c("sq1","sq2","sq3","sq4"),])
+colnames(down_coef) = c("est","se","t","p")
+down_coef$q = 1:4
+
+ggplot(up_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
+ggplot(down_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
+
+# Set 6: Do those that invest in individual stocks/bonds over ETFs/managed funds have higher confidence?
+investType_subset = complete.cases(all_data$investType)
+investType_subset_data = all_data[investType_subset,] #new data frame with complete cases for 'investType'
+investType_subset_data$investType = as.factor(investType_subset_data$investType) #convert to factor
+
+summary(lm(confident_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user + investType, investType_subset_data)) #why am I getting NA in the regression?
+summary(lm(confident_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user + investType, investType_subset_data))
