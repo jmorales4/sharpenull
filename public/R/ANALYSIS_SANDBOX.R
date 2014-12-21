@@ -12,6 +12,7 @@ all_data$return_performance = all_data[,"return"]
 
 # look at distribution of sharpe ratios subjects saw
 ggplot(all_data, aes(x = sharpe)) + geom_histogram()# + geom_density(aes(fill=group),alpha=0.25)
+ggplot(all_data, aes(x = sharpe)) + geom_density(fill='black', alpha=0.25) + geom_density(aes(fill=group),alpha=0.25)
 
 # simple regression suggested by Davids
 summary(lm(up~sharpe, all_data))
@@ -150,12 +151,21 @@ summary(lm(down ~ sharpe * professional + name + literacy + knowledge + experien
 
 
 #Set 5: Does it matter where the return happens?
-# make new vars
-all_data$sq1 = with(all_data, (retq1)/vol)
-all_data$sq2 = with(all_data, (retq2)/vol)
-all_data$sq3 = with(all_data, (retq3)/vol)
-all_data$sq4 = with(all_data, (retq4)/vol)
 
 # check out return by quarter
-summary(lm(up ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
-summary(lm(down ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data))
+lm5up = lm(up ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data)
+lm5down = lm(down ~ sq1 + sq2 + sq3 + sq4 + name + literacy + knowledge + experience + professional + personal + user, all_data)
+
+summary(lm5up)
+summary(lm5down)
+
+up_coef = data.frame(summary(lm5up)$coef[c("sq1","sq2","sq3","sq4"),])
+colnames(up_coef) = c("est","se","t","p")
+up_coef$q = 1:4
+
+down_coef = data.frame(summary(lm5down)$coef[c("sq1","sq2","sq3","sq4"),])
+colnames(down_coef) = c("est","se","t","p")
+down_coef$q = 1:4
+
+ggplot(up_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
+ggplot(down_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
