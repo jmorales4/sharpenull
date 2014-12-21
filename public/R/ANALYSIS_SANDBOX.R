@@ -32,7 +32,8 @@ ggplot(kreg_df, aes(x = sharpe, y = prob, color = type)) + geom_line()
 
 all_data_cov <- all_data[, !names(all_data) %in% c("up", "down", "time", 
                                                    "group", "chart", "ret", "vol"
-                                                   ,"direction", "conviction")]
+                                                   ,"direction", "conviction", "retq1",
+                                                   "retq2","retq3","retq4")]
 all_data_cov_complete <- na.omit(all_data_cov)
 # find and remove categorical variables with only one value
 lapply(na.omit(all_data_cov_complete), unique)
@@ -48,6 +49,11 @@ summary(lm(sharpe~user,data=all_data_cov_complete))
 summary(lm(sharpe~name,data=all_data_cov_complete))
 summary(lm(sharpe~year,data=all_data_cov_complete))
 summary(lm(sharpe~stocks + bonds + cash,data=all_data_cov_complete))
+summary(lm(sharpe~professional,data=all_data))
+summary(lm(sharpe~knowledge,data=all_data))
+summary(lm(sharpe~experience,data=all_data))
+summary(lm(sharpe~literacy,data=all_data))
+summary(lm(sharpe~personal,data=all_data))
 summary(lm(sharpe~user,data=all_data))
 summary(lm(sharpe~name,data=all_data))
 summary(lm(sharpe~time,data=all_data))
@@ -67,8 +73,8 @@ if(!require(reshape)){
   install.packages("DataCombine")
   library(reshape)
 }
-#library(reshape)
-#library(DataCombine)
+library(reshape)
+library(DataCombine)
 
 lag_tests <- all_data[,c("sharpe", "up", "position", "user")]
 lag_tests <- lag_tests[with(lag_tests, order(user, position)),]
@@ -104,6 +110,10 @@ summary(lm(down ~ sharpe + name + literacy + knowledge + experience + profession
 summary(lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 summary(lm(down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 
+# Joint significance test of Sharpe ratio
+reduced <- lm(up ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+full <- lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced, full)
 
 #Set 2: Does Sharpe affect confidence?
 
@@ -112,6 +122,11 @@ all_data$confident_strong <- ifelse(all_data$conviction!="Strong", 0, 1)
 all_data$confident_weak <- ifelse(all_data$conviction!="Weak", 0, 1)
 summary(lm(confident_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 summary(lm(confident_weak ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+
+# Joint significance test of Sharpe ratio
+reduced <- lm(confident_strong ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+full <- lm(confident_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced, full)
 
 #regression with high volatility as binary variable (just for kicks)
 nrow(subset(all_data, vol > .3))
