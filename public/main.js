@@ -84,7 +84,7 @@ function validateUser(source) {
 function enableStart() {
     var enabled = userIdsLoaded && futureChartsLoaded && chartsLoaded && userIdValid;
     if (enabled) blockRandomize();
-    needSurvey = userIdValid && userIds.indexOf(userId) < 0;
+    needSurvey = userIdValid && (userId == '00000' || userIds.indexOf(userId) < 0);
     repeat = !needSurvey;
     enableNextButton(enabled);
     if (enabled) $("#nextButton").focus();
