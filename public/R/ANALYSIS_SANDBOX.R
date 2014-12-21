@@ -169,3 +169,11 @@ down_coef$q = 1:4
 
 ggplot(up_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
 ggplot(down_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
+
+# Set 6: Do those that invest in individual stocks/bonds over ETFs/managed funds have higher confidence?
+investType_subset = complete.cases(all_data$investType)
+investType_subset_data = all_data[investType_subset,] #new data frame with complete cases for 'investType'
+investType_subset_data$investType = as.factor(investType_subset_data$investType) #convert to factor
+
+summary(lm(confident_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user + investType, investType_subset_data)) #why am I getting NA in the regression?
+summary(lm(confident_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user + investType, investType_subset_data))
