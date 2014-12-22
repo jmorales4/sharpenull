@@ -30,15 +30,20 @@ kreg_df = rbind(kreg_df,
 ggplot(kreg_df, aes(x = sharpe, y = prob, color = type)) + geom_line()
 
 # look at kernel regression of strong / weak given sharpe
-kreg_strong = ksmooth(all_data$sharpe, all_data$confident_strong, bandwidth = 1)
-kreg_weak = ksmooth(all_data$sharpe, all_data$confident_weak, bandwidth = 1)
 
-kreg_df_conf = data.frame(sharpe = kreg_strong$x, prob = kreg_strong$y, type = "Strong")
-kreg_df_conf = rbind(kreg_df_conf,
+#create binary conviction variables
+all_data$conviction_strong <- ifelse(all_data$conviction!="Strong", 0, 1)
+all_data$conviction_weak <- ifelse(all_data$conviction!="Weak", 0, 1)
+
+kreg_strong = ksmooth(all_data$sharpe, all_data$conviction_strong, bandwidth = 1)
+kreg_weak = ksmooth(all_data$sharpe, all_data$conviction_weak, bandwidth = 1)
+
+kreg_df_conv = data.frame(sharpe = kreg_strong$x, prob = kreg_strong$y, type = "Strong")
+kreg_df_conv = rbind(kreg_df_conv,
                 data.frame(sharpe = kreg_weak$x, prob = kreg_weak$y, type = "Down")
                 )
 
-ggplot(kreg_df_conf, aes(x = sharpe, y = prob, color = type)) + geom_line()
+ggplot(kreg_df_conv, aes(x = sharpe, y = prob, color = type)) + geom_line()
 
 #covariate balance check
 
@@ -122,31 +127,38 @@ summary(sharpe_up)
 summary(sharpe_down)
 
 # Fully Saturated Sharpe (ret + vol + ret*vol)
-summary(lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
-summary(lm(down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+full_up = lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(full_up)
+full_down = lm(down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(full_down)
 
 # Joint significance test of Sharpe ratio
-reduced <- lm(up ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
-full <- lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
-anova(reduced, full)
+reduced_up <- lm(up ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced_up, full_up)
+
+reduced_down <- lm(down ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced_down, full_down)
+
 
 #Set 2: Does Sharpe affect confidence?
 
-#create binary conviction variables and perform regression
-all_data$confident_strong <- ifelse(all_data$conviction!="Strong", 0, 1)
-all_data$confident_weak <- ifelse(all_data$conviction!="Weak", 0, 1)
-summary(lm(confident_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
-summary(lm(confident_weak ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+# Run regression
+full_strong = lm(conviction_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(full_strong)
+full_weak = lm(conviction_weak ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(full_weak)
 
 # Joint significance test of Sharpe ratio
-reduced <- lm(confident_strong ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
-full <- lm(confident_strong ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
-anova(reduced, full)
+reduced_strong <- lm(conviction_strong ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced_strong, full_strong)
+
+reduced_weak <- lm(conviction_weak ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced_weak, full_weak)
 
 #regression with high volatility as binary variable (just for kicks)
 nrow(subset(all_data, vol > .3))
 all_data$high_vol <- ifelse(all_data$vol < .3, 0, 1)
-summary(lm(confident_strong ~ ret + high_vol + ret * high_vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
+summary(lm(conviction_strong ~ ret + high_vol + ret * high_vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 
 #Set 3: Does perceived asset performance affect confidence
 
@@ -155,16 +167,16 @@ table(subset(all_data, position == 1)$return_performance)
 
 return_subset = complete.cases(all_data$return_performance)
 
-strong3 = lm(confident_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
-weak3 = lm(confident_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+strong3 = lm(conviction_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+weak3 = lm(conviction_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
 summary(strong3)
 summary(weak3)
 
 # Joint significance test
-reduced_strong3 = lm(confident_strong ~ name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+reduced_strong3 = lm(conviction_strong ~ name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
 anova(reduced_strong3, strong3)
 
-reduced_weak3 = lm(confident_weak ~ name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+reduced_weak3 = lm(conviction_weak ~ name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
 anova(reduced_weak3, weak3)
 
 #Set 4: Does Sharpe affect prediction differently for finance professionals?
@@ -202,7 +214,23 @@ ggplot(up_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_poin
 ggplot(down_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
 
 
+#Set 6: Polynomial and Absolute Value Regression on Confidence
 
+lm6abs_strong = lm(conviction_strong ~ abs(sharpe) + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(lm6abs_strong)
 
+lm6abs_weak = lm(conviction_weak ~ abs(sharpe) + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(lm6abs_weak)
 
+lm6reduced_strong = lm(conviction_strong ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+
+lm6poly_strong = lm(conviction_strong ~ poly(sharpe,2) + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(lm6poly_strong)
+anova(lm6reduced_strong, lm6poly_strong)
+
+lm6reduced_weak = lm(conviction_weak ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+
+lm6poly_weak = lm(conviction_weak ~ poly(sharpe,2) + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(lm6poly_weak)
+anova(lm6reduced_weak, lm6poly_weak)
 
