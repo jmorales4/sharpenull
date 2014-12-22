@@ -1,7 +1,7 @@
 # Libraries
 library(ggplot2)
 
-# Load all the data toghether
+# Load all the data together
 load("all_data.Rda")
 
 # look at structure
@@ -102,10 +102,18 @@ ggplot(all_data, aes(x = ret)) + geom_histogram()
 ggplot(all_data, aes(x = vol)) + geom_histogram()
 
 #Set 1: Does Sharpe affect prediction?
+reduced <- lm(up ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
 
 # Sharpe Only
-summary(lm(up ~ sharpe + name + literacy + knowledge + experience + professional + personal + user, all_data))
-summary(lm(down ~ sharpe + name + literacy + knowledge + experience + professional + personal + user, all_data))
+sharpe_up =  lm(up ~ sharpe + name + literacy + knowledge + experience + professional + personal + user, all_data)
+sharpe_down =  lm(down ~ sharpe + name + literacy + knowledge + experience + professional + personal + user, all_data)
+summary(sharpe_up)
+summary(sharpe_down)
+
+# Joint significance test of Sharpe ratio
+reduced <- lm(up ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
+full <- lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
+anova(reduced, full)
 
 # Fully Saturated Sharpe (ret + vol + ret*vol)
 summary(lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
