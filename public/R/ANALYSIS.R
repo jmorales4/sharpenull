@@ -1,21 +1,6 @@
 ### Libraries
 library(ggplot2)
 
-### Functions
-#Function to compute clustered standard errors in R
-cl <- function(dat, fm, cluster){
-  require(sandwich, quietly = TRUE)
-  require(lmtest, quietly = TRUE)
-  M <- length(unique(cluster))
-  N <- length(cluster)
-  K <- fm$rank
-  dfc <- (M/(M-1))*((N-1)/(N-K))
-  uj <- apply(estfun(fm),2, function(x) tapply(x, cluster, sum));
-  vcovCL <- dfc*sandwich(fm, meat=crossprod(uj)/N)
-  coeftest(fm, vcovCL)
-}
-
-
 # Load all the data together
 load("all_data.Rda")
 
@@ -43,6 +28,17 @@ kreg_df = rbind(kreg_df,
                 )
 
 ggplot(kreg_df, aes(x = sharpe, y = prob, color = type)) + geom_line()
+
+# look at kernel regression of strong / weak given sharpe
+kreg_strong = ksmooth(all_data$sharpe, all_data$confident_strong, bandwidth = 1)
+kreg_weak = ksmooth(all_data$sharpe, all_data$confident_weak, bandwidth = 1)
+
+kreg_df_conf = data.frame(sharpe = kreg_strong$x, prob = kreg_strong$y, type = "Strong")
+kreg_df_conf = rbind(kreg_df_conf,
+                data.frame(sharpe = kreg_weak$x, prob = kreg_weak$y, type = "Down")
+                )
+
+ggplot(kreg_df_conf, aes(x = sharpe, y = prob, color = type)) + geom_line()
 
 #covariate balance check
 
@@ -125,11 +121,6 @@ sharpe_down =  lm(down ~ sharpe + name + literacy + knowledge + experience + pro
 summary(sharpe_up)
 summary(sharpe_down)
 
-# Joint significance test of Sharpe ratio
-reduced <- lm(up ~ name + literacy + knowledge + experience + professional + personal + user, all_data)
-full <- lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data)
-anova(reduced, full)
-
 # Fully Saturated Sharpe (ret + vol + ret*vol)
 summary(lm(up ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
 summary(lm(down ~ ret * vol + name + literacy + knowledge + experience + professional + personal + user, all_data))
@@ -160,17 +151,34 @@ summary(lm(confident_strong ~ ret + high_vol + ret * high_vol + name + literacy 
 #Set 3: Does perceived asset performance affect confidence
 
 # check out how many of each category people said
-# TODO: interesting distribution
 table(subset(all_data, position == 1)$return_performance)
 
 return_subset = complete.cases(all_data$return_performance)
 
-summary(lm(confident_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,]))
-summary(lm(confident_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,]))
+strong3 = lm(confident_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+weak3 = lm(confident_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+summary(strong3)
+summary(weak3)
+
+# Joint significance test
+reduced_strong3 = lm(confident_strong ~ name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+anova(reduced_strong3, strong3)
+
+reduced_weak3 = lm(confident_weak ~ name + literacy + knowledge + experience + professional + user, all_data[return_subset,])
+anova(reduced_weak3, weak3)
 
 #Set 4: Does Sharpe affect prediction differently for finance professionals?
-summary(lm(up ~ sharpe * professional + name + literacy + knowledge + experience + personal + user, all_data))
-summary(lm(down ~ sharpe * professional + name + literacy + knowledge + experience + personal + user, all_data))
+up4 = lm(up ~ sharpe * professional + name + literacy + knowledge + experience + personal + user, all_data)
+down4 = lm(down ~ sharpe * professional + name + literacy + knowledge + experience + personal + user, all_data)
+summary(up4)
+summary(down4)
+
+# Joint significance test
+reduced_up4 = lm(up ~ name + literacy + knowledge + experience + personal + user, all_data)
+anova(reduced_up4, up4)
+
+reduced_down4 = lm(down ~ name + literacy + knowledge + experience + personal + user, all_data)
+anova(reduced_down4, down4)
 
 
 #Set 5: Does it matter where the return happens?
@@ -193,10 +201,8 @@ down_coef$q = 1:4
 ggplot(up_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
 ggplot(down_coef, aes(x=q, y=est, ymin=est-se*1.96, ymax=est+se*1.96)) + geom_point() + geom_errorbar()
 
-# Set 6: Do those that invest in individual stocks/bonds over ETFs/managed funds have higher confidence?
-investType_subset = complete.cases(all_data$investType)
-investType_subset_data = all_data[investType_subset,] #new data frame with complete cases for 'investType'
-investType_subset_data$investType = as.factor(investType_subset_data$investType) #convert to factor
 
-summary(lm(confident_strong ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user + investType, investType_subset_data)) #why am I getting NA in the regression?
-summary(lm(confident_weak ~ sharpe * return_performance + name + literacy + knowledge + experience + professional + user + investType, investType_subset_data))
+
+
+
+
