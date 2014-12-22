@@ -141,8 +141,6 @@ if(length(index_30079_6) > 1){
 # There should only be one position per user
 table(test_df$position, test_df$user)
 
-# TODO One user only entered 2 charts than quit - what to do???
-
 
 ############################
 ### Clean Survey Data
